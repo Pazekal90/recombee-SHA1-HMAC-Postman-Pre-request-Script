@@ -15,8 +15,7 @@ Follow the instructions in the script and your good to go. :)
     "hmac_sign" with the value "{{hmac_sign}}"  
     These params should always be at the end of the request to get the script working properly.
 4) Add the following Pre-request Script that computes the two variables and adds them into your environment
-5) Fill your and SECRET_KEY with your private key from Recombee(from the corresponding Recombee DB)
-6) Your request GET URL should look like this(Example to list all items from Recombee):
+5) Your request GET URL should look like this(Example to list all items from Recombee):
     https://rapi.recombee.com/{{RecombeeDB}}/items/list/?hmac_timestamp={{hmac_timestamp}}&hmac_sign={{hmac_sign}}
 */
 
