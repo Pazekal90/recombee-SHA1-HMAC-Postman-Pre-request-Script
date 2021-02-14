@@ -7,10 +7,13 @@ Follow the instructions in the script and your good to go. :)
 /* Pre-requisite
 ==================
 1) Create an Environment (if you don't already have on) and enable it for your request
-2) Add a variable named "RecombeeDB" to your environment and fill in our DB Name from Recombee as Initial Value
+2) Add two variables to your environment:
+    "RecombeeDB" and fill in our DB Name from Recombee as Initial Value
+    "PrivateToken" and fill in our Private Token from Recombee as Initial Value
 3) Add two new params for your request: 
     "hmac_timestamp" with the value "{{hmac_timestamp}}"
     "hmac_sign" with the value "{{hmac_sign}}"  
+    These params should always be at the end of the request to get the script working properly.
 4) Add the following Pre-request Script that computes the two variables and adds them into your environment
 5) Fill your and SECRET_KEY with your private key from Recombee(from the corresponding Recombee DB)
 6) Your request GET URL should look like this(Example to list all items from Recombee):
@@ -18,16 +21,26 @@ Follow the instructions in the script and your good to go. :)
 */
 
 function getPath(url) {
-    var pathRegex = /.+?\:\/\/.+?(\/.+?)(?:#|\?|$)/;
+    var pathRegex = /.+?\:\/\/.+?(\/.+?)(?:#|\&hmac|\?hmac|$)/;
     var result = url.match(pathRegex);
     return pm.variables.replaceIn(result) && result.length > 1 ? result[1] : ''; 
 }
  
 function getToken(requestUrl) {
-    var SECRET_KEY = '';
+    var SECRET_KEY = pm.environment.get("PrivateToken");
 
     var requestPath = getPath(requestUrl);
-    var PathWithTimestamp = requestPath + "?hmac_timestamp=" + getTimestamp();
+
+    var querystringregex = /\?/;
+    var querystringexist = requestPath.match(querystringregex);
+    if(querystringexist != null && querystringexist.length > 0) {
+        var separator = "&";
+    }
+    else {
+        var separator = "?";
+    }
+    
+    var PathWithTimestamp = requestPath + separator + "hmac_timestamp=" + getTimestamp();
     var SignedPath = CryptoJS.HmacSHA1(PathWithTimestamp, SECRET_KEY)
 
     return SignedPath;
