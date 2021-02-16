@@ -10,14 +10,32 @@ Follow the instructions in the script and your good to go. :)
 2) Add two variables to your environment:
     "RecombeeDB" and fill in our DB Name from Recombee as Initial Value
     "PrivateToken" and fill in our Private Token from Recombee as Initial Value
-3) Add two new params for your request: 
+3) Add those new params for your request: 
     "hmac_timestamp" with the value "{{hmac_timestamp}}"
     "hmac_sign" with the value "{{hmac_sign}}"  
     These params should always be at the end of the request to get the script working properly.
+    "filter" with the value "{{filter}}"
+    "booster" with the value "{{booster}}"
 4) Add the following Pre-request Script that computes the two variables and adds them into your environment
-5) Your request GET URL should look like this(Example to list all items from Recombee):
+5) Fill your and SECRET_KEY with your private key from Recombee(from the corresponding Recombee DB)
+6) Your request GET URL should look like this(Example to list all items from Recombee):
     https://rapi.recombee.com/{{RecombeeDB}}/items/list/?hmac_timestamp={{hmac_timestamp}}&hmac_sign={{hmac_sign}}
 */
+
+//If you want to use the filter or boosting attributes, you need to set them here because of escaping logics of recombee and Postman. 
+//If you don´t want to use them in your request, let them empty.
+var filter  = "'active'";
+var booster = "if 'itemId' in \"PROD_42266\" then 10 else 1";
+
+function getParams(params) {
+    
+    const encodedParams = encodeURIComponent(params)
+        .replace(/{/g, "%7B")
+        .replace(/}/g, "%7D")
+        .replace(/'/g, "%27");
+
+    return encodedParams;
+}
 
 function getPath(url) {
     var pathRegex = /.+?\:\/\/.+?(\/.+?)(?:#|\&hmac|\?hmac|$)/;
@@ -50,6 +68,15 @@ function getTimestamp() {
     return timestamp;
 }
 
+if(booster == null || booster == "") {
+    pm.request.url.query.remove("booster");
+}
+if(filter == null || filter == "") {
+    pm.request.url.query.remove("filter");
+}
+
+postman.setEnvironmentVariable("filter", getParams(filter));
+postman.setEnvironmentVariable("booster", getParams(booster));
 postman.setEnvironmentVariable('hmac_timestamp', getTimestamp());
-postman.setEnvironmentVariable('hmac_sign', getToken(request['url']));
+postman.setEnvironmentVariable('hmac_sign', getToken(pm.request.url.getRaw()));
 ```
