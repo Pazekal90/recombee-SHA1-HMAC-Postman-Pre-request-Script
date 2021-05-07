@@ -71,10 +71,6 @@ function getToken(requestUrl, timestamp) {
 }
 
 function signUrl() {
-    // Make sure that URL does not contain hmac_timestamp and hmac_sign
-    pm.request.url.query.remove("hmac_timestamp");
-    pm.request.url.query.remove("hmac_sign");
-
     var timestamp = getTimestamp();
     var hmacSign = getToken(pm.request.url.getRaw(), timestamp);
     
