@@ -72,7 +72,7 @@ function getToken(requestUrl, timestamp) {
 
 function signUrl() {
     var timestamp = getTimestamp();
-    var hmacSign = getToken(pm.request.url.getRaw(), timestamp);
+    var hmacSign = getToken(pm.request.url.toString(), timestamp);
     
     postman.setEnvironmentVariable('hmac_timestamp', timestamp);
     postman.setEnvironmentVariable('hmac_sign', hmacSign);
