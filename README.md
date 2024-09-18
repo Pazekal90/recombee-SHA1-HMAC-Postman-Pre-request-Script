@@ -30,6 +30,8 @@ Example URLs:
 
 //If you want to use the filter or boosting attributes, you need to set them here because of escaping logics of recombee and Postman. 
 //If you don´t want to use them in your request, let them empty.
+cryptojs = require('crypto-js');
+
 var filter  = "'active'";
 var booster = "if 'itemId' in \"PROD_42266\" then 10 else 1";
 
@@ -64,8 +66,10 @@ function getToken(requestUrl, timestamp) {
         var separator = "?";
     }
     
-    var PathWithTimestamp = requestPath + separator + "hmac_timestamp=" + timestamp;
-    var SignedPath = CryptoJS.HmacSHA1(PathWithTimestamp, SECRET_KEY)
+    const PathWithTimestamp = requestPath + separator + "hmac_timestamp=" + timestamp;
+    const hmac = cryptojs.algo.HMAC.create(cryptojs.algo.SHA1, SECRET_KEY);
+    hmac.update(PathWithTimestamp);
+    const SignedPath = hmac.finalize().toString();
 
     return SignedPath;
 }
@@ -74,10 +78,10 @@ function signUrl() {
     var timestamp = getTimestamp();
     var hmacSign = getToken(pm.request.url.toString(), timestamp);
     
-    postman.setEnvironmentVariable('hmac_timestamp', timestamp);
-    postman.setEnvironmentVariable('hmac_sign', hmacSign);
-    pm.request.url.query.add("hmac_timestamp={{hmac_timestamp}}")
-    pm.request.url.query.add("hmac_sign={{hmac_sign}}")
+    pm.environment.set('hmac_timestamp', timestamp);
+    pm.environment.set('hmac_sign', hmacSign);
+    pm.request.url.query.add("hmac_timestamp={{hmac_timestamp}}");
+    pm.request.url.query.add("hmac_sign={{hmac_sign}}");
 }
 
 function getTimestamp() {
@@ -92,7 +96,7 @@ if(filter == null || filter == "") {
     pm.request.url.query.remove("filter");
 }
 
-postman.setEnvironmentVariable("filter", getParams(filter));
-postman.setEnvironmentVariable("booster", getParams(booster));
+pm.environment.set("filter", getParams(filter));
+pm.environment.set("booster", getParams(booster));
 signUrl();
 ```
